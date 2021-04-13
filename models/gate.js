@@ -14,6 +14,7 @@ const GATE = Schema({
     TOTAL_SERVERS: String,
     TOTAL_USERS: String,
     IGNORED_GUILDS: Array,
+    CHATTER_SERVERS: Array,
     UPDATE_TIME: String
 })
 

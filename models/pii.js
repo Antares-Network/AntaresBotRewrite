@@ -13,6 +13,11 @@ const PII = Schema({
     GUILD_DEFAULT_CHANNEL: String,
     GUILD_ADMIN_CHANNEL: String,
     GUILD_COUNTING_NUMBER: String,
+    rchat_STATUS: String,
+    rchat_CHANNEL: String,
+    rchat_remote: String,
+    rchat_REMOTE_ALIAS: String,
+    rchat_ALIAS: String,
     GUILD_POLL_TIMEOUT: String
 })
 
