@@ -7,44 +7,50 @@ notSetup = "Your server owner has not setup `Random Chatter` on your server"
 
 
 // set rchat alias
-function setAlias(alias){
+async function setAlias(alias){
     // update the database of the current server with its new rchat alias
     await piiModel.findOneAndUpdate({ GUILD_ID: message.guild.id }, { $set: { rchat_ALIAS: alias } }, { new: true });
 }
 
 // get rchat alias
-function getAlias(serverID){
+async function getAlias(serverID){
     let server = await piiModel.findOne({ GUILD_ID: serverID})
     return server.rchat_ALIAS;
 }
 
 // get state
-function getState(message){
+async function getState(message){
     // get the gate object for all the servers
     const gate = await gateModel.findOne({ NAME: 'GATE' });
     // check if the current guild is in the list of rchat guilds.
-    if(gate.CHATTER_SERVERS.includes(message.guild.id)){
+    if(gate.CHATTER_SERVERS.includes(message.guild.id.toString())){
         // If they are in the list of rchat guilds than rchat is enabled and return true
+        console.log(`rchat is enabled in this server`)
         return true
     }
     // delete the most recent message sent in the rchat channel
     message.delete()
     // let the current server know rchat is not setup yet
     message.channel.send(notSetup)
+    console.log(`rchat is  not enabled in this server`)
+
     // else return false if rchat is not enabled in the current server
     return false
 }
 
 // set state
-function setState(){
+async function setState(message, status){
     // get the gate object for all the servers
     const gate = await gateModel.findOne({ NAME: 'GATE' });
     // get the remote chatter servers from the gate
     var servers = gate.CHATTER_SERVERS
     // if the command was sent with a start argument, enable rchat on the current server
-    if (status == "start") {
+
+    let state = await getState(message)
+    console.log(state)
+    if (status == "start" && !state) {
         // append the current server id to the list of rchat enabled servers
-        servers.push(id)
+        servers.push(message.guild.id)
         // get the channel object of the rchat channel in the current server
         const channelObj = bot.channels.cache.filter(c => c.name === 'rchat').keyArray().includes(message.channel.id)
         // update the database of the current server with the new list of rchat enabled servers
@@ -57,7 +63,7 @@ function setState(){
     //if the command was sent with a stop argument, disable rchat in the current server
     } else if (status == "stop") {
         //remove the current server id from the list of rchat enabled servers
-        servers.splice(servers.indexOf(id), 1)
+        servers.splice(servers.indexOf(message.guild.id), 1)
         // update the gate database with the new list of rchat enabled servers
         await gateModel.findOneAndUpdate({ NAME: 'GATE' }, { $set: { CHATTER_SERVERS: servers } }, { new: true });
         // update the database of the current server with the status "stop"
@@ -76,7 +82,7 @@ function connectionRequest(remoteID){
 }
 
 // start connection
-function connect(remoteGuild){
+async function connect(message, remoteGuild){
     // get the channel id of the remote server's rchat channel
     let remoteChannelID = remoteGuild.rchat_CHANNEL
     // get the alias of the remote server to preserve privacy
@@ -97,7 +103,7 @@ function connect(remoteGuild){
 // check for correct channel
 
 // get random server
-function getRandomServer(){
+async function getRandomServer(message){
     // get the gate object for all servers
     const gate = await gateModel.findOne({ NAME: 'GATE' }); 
     // get the rchat server list
@@ -139,3 +145,9 @@ function sendTerminationMsg(remoteID){
 //! Make all messages that are not regular text send as embeds. Disallow images, links, videos, and files thru
 
 // export functions
+
+module.exports.getState = getState;
+module.exports.setState = setState;
+module.exports.connect = connect;
+module.exports.connectionRequest = connectionRequest;
+module.exports.getRandomServer = getRandomServer;

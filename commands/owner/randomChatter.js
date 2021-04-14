@@ -30,7 +30,16 @@ module.exports = class RandomChatterCommand extends Command {
         return this.client.isOwner(msg.author);
     }
 
-    run(message, { status }) {
-        rChat.toggle(message.guild.id, status)
+    async run(message, { args }) {
+        let state = await rChat.getState(message)
+
+        await rChat.setState(message, args)
+
+        if(state) {
+            let remoteGuild = await rChat.getRandomServer(message)
+            await rChat.connect(message, remoteGuild)
+            console.log(remoteGuild)
+        }
+    
     }
 };
