@@ -67,8 +67,37 @@ function setState(){
     }
 }
 
+// ask to connect
+function connectionRequest(remoteID){
+    // send a message to the remote server with a connection request
+    bot.channels.cache.get(remoteID).send(ConnectionRequestEmbed);
+
+    //! some logic to get a response to the connection request
+}
+
 // start connection
-function connect(){
+function connect(remoteGuild){
+    // get the channel id of the remote server's rchat channel
+    let remoteChannelID = remoteGuild.rchat_CHANNEL
+    // get the alias of the remote server to preserve privacy
+    let remoteAlias = remoteGuild.rchat_REMOTE_ALIAS
+    // update the database of the connecting server with the channel id of the remote server
+    await piiModel.findOneAndUpdate({ GUILD_ID: message.guild.id }, { $set: { rchat_REMOTE: remoteChannelID } }, { new: true});
+    // update the database of the connecting server with the alias of the remote server
+    await piiModel.findOneAndUpdate({ GUILD_ID: message.guild.id }, { $set: { rchat_REMOTE_ALIAS: remoteAlias } }, { new: true});
+
+    await piiModel.findOneAndUpdate({ GUILD_ID: remoteGuild.GUILD_ID }, { $set: { rchat_REMOTE: remoteChannelID } }, { new: true});
+
+}
+
+// get connected server
+
+// set connected server
+
+// check for correct channel
+
+// get random server
+function getRandomServer(){
     // get the gate object for all servers
     const gate = await gateModel.findOne({ NAME: 'GATE' }); 
     // get the rchat server list
@@ -79,23 +108,8 @@ function connect(){
     let remoteGuildID = servers[Math.floor(Math.random() * servers.length)]
     // get the information of the remote guild
     let remoteGuild = await piiModel.findOne({ GUILD_ID: remoteGuildID }) 
-    // get the channel id of the remote server's rchat channel
-    let remoteChannelID = remoteGuild.rchat_CHANNEL
-    // get the alias of the remote server to preserve privacy
-    let remoteAlias = remoteGuild.rchat_REMOTE_ALIAS
-    // update the database of the connecting server with the channel id of the remote server
-    await piiModel.findOneAndUpdate({ GUILD_ID: message.guild.id }, { $set: { rchat_REMOTE: remoteChannelID } }, { new: true});
-    // update the database of the connecting server with the alias of the remote server
-    await piiModel.findOneAndUpdate({ GUILD_ID: message.guild.id }, { $set: { rchat_REMOTE_ALIAS: remoteAlias } }, { new: true});
+    return remoteGuild
 }
-
-// get connected server
-
-// set connected server
-
-// check for correct channel
-
-// get random server
 
 //? receive message
 
@@ -119,6 +133,8 @@ function sendTerminationMsg(remoteID){
 // create message embed
 
 // create TerminationEmbed
+
+// create connectionRequestEmbed
 
 //! Make all messages that are not regular text send as embeds. Disallow images, links, videos, and files thru
 
